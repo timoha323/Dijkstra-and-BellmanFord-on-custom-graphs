@@ -1,0 +1,11 @@
+{
+"rules": [
+{
+"primary-output": "CMakeFiles\\laba4.dir\\tests.cpp.obj",
+"requires": [
+]
+}
+],
+"version": 0,
+"revision": 0
+}

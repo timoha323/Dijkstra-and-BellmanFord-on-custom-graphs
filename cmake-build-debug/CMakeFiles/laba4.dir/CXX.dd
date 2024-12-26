@@ -1,0 +1,9 @@
+ninja_dyndep_version = 1.0
+build CMakeFiles/laba4.dir/main.cpp.obj: dyndep
+
+build CMakeFiles/laba4.dir/menu.cpp.obj: dyndep
+
+build CMakeFiles/laba4.dir/DataStructures/Graph.cpp.obj: dyndep
+
+build CMakeFiles/laba4.dir/tests.cpp.obj: dyndep
+
