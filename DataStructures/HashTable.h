@@ -6,13 +6,14 @@
 #include "LinkedListSmart.h"
 #include "ShrdPtr.h"
 #include "UnqPtr.h"
+#include "Graph.h"
 #include "IndexPair.h"
 #include <functional>
 #include <stdexcept>
 #include <type_traits>
 
-
-class Edge;
+// Предварительное объявление Node
+template<typename T>
 class Node;
 
 template<typename T>
@@ -112,17 +113,19 @@ template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::GetCapacity() const {
     return capacity;
 }
-
 template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::HashFunction(const TKey &key) const {
-    if constexpr (std::is_same<TKey, ShrdPtr<Node>>::value) {
-        return ShrdPtrHash<Node>()(key); // Используйте ShrdPtrHash для ShrdPtr<Node>
-    } else if constexpr (std::is_same<TKey, IndexPair>::value) {
+    if constexpr (std::is_same<TKey, ShrdPtr<Node<std::string>>>::value) {
+        return std::hash<std::string>()(key->getName());
+    }
+    else if constexpr (std::is_same<TKey, IndexPair>::value) {
         return IndexPairHash()(key);
-    } else {
-        return std::hash<TKey>()(key);  // Для остальных типов используйте std::hash
+    }
+    else {
+        return std::hash<TKey>()(key);
     }
 }
+
 
 template<typename TKey, typename TElement>
 void HashTable<TKey, TElement>::Add(const TKey &key, const TElement &element) {

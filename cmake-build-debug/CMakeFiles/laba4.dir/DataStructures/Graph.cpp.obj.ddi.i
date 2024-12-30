@@ -5,6 +5,7 @@
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.cpp"
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 1
        
+
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/LinkedListSmart.h" 1
 
 
@@ -75596,6 +75597,24 @@ public:
         }
     }
 
+    void Remove(T& elem) {
+        auto current = head;
+        int index = 0;
+        while (current->next) {
+            if (current->data == elem) {
+                RemoveAt(index);
+                return;
+            }
+            ++index;
+            current = current->next;
+        }
+        if (current->data == elem) {
+            RemoveAt(index);
+            return;
+        }
+        throw std::out_of_range("Index out of range");
+    }
+
     void RemoveAt(int index) override {
         if (index < 0 || index >= static_cast<int>(length))
             throw std::out_of_range("Index out of range");
@@ -75662,7 +75681,7 @@ public:
         return Iterator(nullptr);
     }
 };
-# 3 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 4 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/ShrdPtr.h" 1
 
 
@@ -75893,7 +75912,7 @@ public:
         return ref_count;
     }
 };
-# 4 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 5 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 1
 
 
@@ -76433,6 +76452,7 @@ public:
     }
 };
 # 6 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+
 
 
 
@@ -78140,7 +78160,7 @@ struct IndexPairHash {
         return row_hash ^ (col_hash * 2654435761);
     }
 };
-# 10 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+# 11 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
 # 1 "C:/mingw64/include/c++/14.2.0/functional" 1 3
 # 46 "C:/mingw64/include/c++/14.2.0/functional" 3
        
@@ -91533,14 +91553,14 @@ namespace std
 
 
 }
-# 11 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+# 12 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
 
 
 
 
 
-# 15 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
-class Edge;
+# 16 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
+template<typename T>
 class Node;
 
 template<typename T>
@@ -91640,17 +91660,19 @@ template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::GetCapacity() const {
     return capacity;
 }
-
 template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::HashFunction(const TKey &key) const {
-    if constexpr (std::is_same<TKey, ShrdPtr<Node>>::value) {
-        return ShrdPtrHash<Node>()(key);
-    } else if constexpr (std::is_same<TKey, IndexPair>::value) {
+    if constexpr (std::is_same<TKey, ShrdPtr<Node<std::string>>>::value) {
+        return std::hash<std::string>()(key->getName());
+    }
+    else if constexpr (std::is_same<TKey, IndexPair>::value) {
         return IndexPairHash()(key);
-    } else {
+    }
+    else {
         return std::hash<TKey>()(key);
     }
 }
+
 
 template<typename TKey, typename TElement>
 void HashTable<TKey, TElement>::Add(const TKey &key, const TElement &element) {
@@ -91808,7 +91830,7 @@ template<typename TKey, typename TElement>
 UnqPtr<IDictionaryIterator<TKey, TElement>> HashTable<TKey, TElement>::GetIterator() const {
     return UnqPtr<IDictionaryIterator<TKey, TElement>>(new HashTableIterator(this));
 }
-# 5 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 6 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 
 
 # 1 "C:/mingw64/include/c++/14.2.0/queue" 1 3
@@ -95266,173 +95288,182 @@ namespace std
        
 # 48 "C:/mingw64/include/c++/14.2.0/bits/version.h" 3
 # 70 "C:/mingw64/include/c++/14.2.0/queue" 2 3
-# 8 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 9 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 
 
 
 
 
-# 12 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h"
+
+# 14 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h"
+template <typename T>
+class Edge;
+
+template <typename T>
+class Node;
+
+template <typename T>
+class Graph;
+
+template <typename T>
 class Node {
 private:
-    LinkedListSmart<ShrdPtr<Edge>> edges_;
-    std::string name_;
+    LinkedListSmart<ShrdPtr<Edge<T>>> edges_;
+    T name_;
     static int nodeId_;
 
 public:
-    Node();
-    Node(std::string name);
+    Node() {
+        name_ = std::to_string(++nodeId_);
+    }
+    explicit Node(T name) : name_(std::move(name)) {}
 
-    const std::string getName() const;
+    const T& getName() const { return name_; }
 
     Node(const Node&) = delete;
     Node& operator=(const Node&) = delete;
 
-    Node(Node&& other) noexcept;
-    Node& operator=(Node&& other) noexcept;
+    Node(Node&& other) noexcept = default;
+    Node& operator=(Node&& other) noexcept = default;
 
-    void addEdge(const ShrdPtr<Edge>& edge);
-    const LinkedListSmart<ShrdPtr<Edge>>& getEdges() const;
+    void addEdge(const ShrdPtr<Edge<T>>& edge) { edges_.Append(edge); }
+    LinkedListSmart<ShrdPtr<Edge<T>>>& getEdges() { return edges_; }
 };
 
+template <typename T>
+int Node<T>::nodeId_ = 0;
+
+template <typename T>
 class Edge {
 private:
     int weight_;
-    ShrdPtr<Node> fromNode_;
-    ShrdPtr<Node> toNode_;
+    ShrdPtr<Node<T>> fromNode_;
+    ShrdPtr<Node<T>> toNode_;
 
 public:
-    Edge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode);
+    Edge(int weight, const ShrdPtr<Node<T>>& fromNode, const ShrdPtr<Node<T>>& toNode)
+        : weight_(weight), fromNode_(fromNode), toNode_(toNode) {}
 
-    int getWeight() const;
-    ShrdPtr<Node> getFromNode() const;
-    ShrdPtr<Node> getToNode() const;
+    int getWeight() const { return weight_; }
+    ShrdPtr<Node<T>> getFromNode() const { return fromNode_; }
+    ShrdPtr<Node<T>> getToNode() const { return toNode_; }
 };
 
+template <typename T>
 class Graph {
 private:
-    DynamicArraySmart<ShrdPtr<Node>> nodes_;
-    DynamicArraySmart<ShrdPtr<Edge>> edges_;
+    DynamicArraySmart<ShrdPtr<Node<T>>> nodes_;
+    DynamicArraySmart<ShrdPtr<Edge<T>>> edges_;
 
 public:
-    Graph() = default;
 
-    ShrdPtr<Node> createNode();
-    ShrdPtr<Node> getNodeByName(const std::string& name);
-    ShrdPtr<Node> createNode(const std::string& nodeName);
-    ShrdPtr<Edge> createEdge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode);
+    ShrdPtr<Node<T>> createNode(const T& nodeName) {
+        auto node = ShrdPtr<Node<T>>(new Node<T>(nodeName));
+        nodes_.Append(node);
+        return node;
+    }
 
-    const DynamicArraySmart<ShrdPtr<Node>>& getNodes() const;
-    const DynamicArraySmart<ShrdPtr<Edge>>& getEdges() const;
+    ShrdPtr<Node<T>> getNodeByName(const T& name) {
+        for (const auto& node : nodes_) {
+            if (node->getName() == name) {
+                return node;
+            }
+        }
+        throw std::runtime_error("Node not found");
+    }
+
+    ShrdPtr<Edge<T>> createEdge(int weight, const ShrdPtr<Node<T>>& fromNode, const ShrdPtr<Node<T>>& toNode) {
+        auto edge = ShrdPtr<Edge<T>>(new Edge<T>(weight, fromNode, toNode));
+        edges_.Append(edge);
+        fromNode->addEdge(edge);
+        return edge;
+    }
+
+    void removeNode(const T& nodeName);
+    void removeEdge(const T& fromNodeName, const T& toNodeName);
+
+    const DynamicArraySmart<ShrdPtr<Node<T>>>& getNodes() const { return nodes_; }
+    const DynamicArraySmart<ShrdPtr<Edge<T>>>& getEdges() const { return edges_; }
 };
 
 class Dijkstra {
 public:
-    static DynamicArraySmart<ShrdPtr<Edge>> findShortestPath(const ShrdPtr<Node>& startNode, const ShrdPtr<Node>& targetNode);
+    template <typename T>
+    static DynamicArraySmart<ShrdPtr<Edge<T>>> findShortestPath(const ShrdPtr<Node<T>>& startNode, const ShrdPtr<Node<T>>& targetNode);
 };
 
 class BellmanFord {
 public:
-    static DynamicArraySmart<ShrdPtr<Edge>> findShortestPath(
-        const ShrdPtr<Node>& startNode,
-        const ShrdPtr<Node>& targetNode,
-        const DynamicArraySmart<ShrdPtr<Edge>>& edges,
-        const DynamicArraySmart<ShrdPtr<Node>>& nodes
+    template <typename T>
+    static DynamicArraySmart<ShrdPtr<Edge<T>>> findShortestPath(
+        const ShrdPtr<Node<T>>& startNode,
+        const ShrdPtr<Node<T>>& targetNode,
+        const DynamicArraySmart<ShrdPtr<Edge<T>>>& edges,
+        const DynamicArraySmart<ShrdPtr<Node<T>>>& nodes
     );
 };
-# 2 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.cpp" 2
 
-int Node::nodeId_ = 0;
-
-Node::Node() {
-    name_ = std::to_string(nodeId_++);
-}
-
-Node::Node(std::string name) : name_(std::move(name)) {
-    nodeId_++;
-}
-
-const std::string Node::getName() const {
-    return name_;
-}
-
-Node::Node(Node&& other) noexcept : edges_(std::move(other.edges_)), name_(std::move(other.name_)) {}
-
-Node& Node::operator=(Node&& other) noexcept {
-    if (this != &other) {
-        edges_ = std::move(other.edges_);
-    }
-    return *this;
-}
-
-void Node::addEdge(const ShrdPtr<Edge>& edge) {
-    edges_.Append(edge);
-}
-
-const LinkedListSmart<ShrdPtr<Edge>>& Node::getEdges() const {
-    return edges_;
-}
-
-Edge::Edge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode)
-    : weight_(weight), fromNode_(fromNode), toNode_(toNode) {}
-
-int Edge::getWeight() const {
-    return weight_;
-}
-
-ShrdPtr<Node> Edge::getFromNode() const {
-    return fromNode_;
-}
-
-ShrdPtr<Node> Edge::getToNode() const {
-    return toNode_;
-}
-
-
-ShrdPtr<Node> Graph::createNode() {
-    auto node = ShrdPtr<Node>(new Node());
-    nodes_.Append(node);
-    return node;
-}
-ShrdPtr<Node> Graph::getNodeByName(const std::string& name) {
+template <typename T>
+void Graph<T>::removeNode(const T& nodeName) {
+    ShrdPtr<Node<T>> nodeToRemove;
     for (int i = 0; i < nodes_.GetLength(); ++i) {
-        auto node = nodes_[i];
-        if (node->getName() == name) {
-            return node;
+        if (nodes_[i]->getName() == nodeName) {
+            nodeToRemove = nodes_[i];
+            nodes_.RemoveAt(i);
+            break;
         }
     }
-    throw std::invalid_argument("Node does not exist");
+
+    if (!nodeToRemove) {
+        throw std::invalid_argument("Node does not exist");
+    }
+
+    for (int i = edges_.GetLength() - 1; i >= 0; --i) {
+        if (edges_[i]->getFromNode() == nodeToRemove || edges_[i]->getToNode() == nodeToRemove) {
+            edges_.RemoveAt(i);
+        }
+    }
 }
 
-ShrdPtr<Node> Graph::createNode(const std::string& nodeName) {
-    auto node = ShrdPtr<Node>(new Node(nodeName));
-    nodes_.Append(node);
-    return node;
-}
+template <typename T>
+void Graph<T>::removeEdge(const T& fromNode, const T& toNode) {
+    ShrdPtr<Edge<T>> edgeToRemove;
+    for (int i = 0; i < edges_.GetLength(); ++i) {
+        if (edges_[i]->getFromNode()->getName() == fromNode && edges_[i]->getToNode()->getName() == toNode) {
+            edgeToRemove = edges_[i];
+            edges_.RemoveAt(i);
+            break;
+        }
+    }
 
-ShrdPtr<Edge> Graph::createEdge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode) {
-    auto edge = ShrdPtr<Edge>(new Edge(weight, fromNode, toNode));
-    edges_.Append(edge);
-    fromNode->addEdge(edge);
-    toNode->addEdge(edge);
-    return edge;
-}
+    if (!edgeToRemove) {
+        throw std::invalid_argument("Edge does not exist");
+    }
 
-const DynamicArraySmart<ShrdPtr<Node>>& Graph::getNodes() const {
-    return nodes_;
-}
+    for (auto& edge : edgeToRemove->getFromNode()->getEdges()) {
+        if (edge == edgeToRemove) {
+            edgeToRemove->getFromNode()->getEdges().Remove(edge);
+            break;
+        }
+    }
 
-const DynamicArraySmart<ShrdPtr<Edge>>& Graph::getEdges() const {
-    return edges_;
+    for (auto& edge : edgeToRemove->getToNode()->getEdges()) {
+        if (edge == edgeToRemove) {
+            edgeToRemove->getToNode()->getEdges().Remove(edge);
+            break;
+        }
+    }
 }
+# 2 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.cpp" 2
 
-DynamicArraySmart<ShrdPtr<Edge>> Dijkstra::findShortestPath(const ShrdPtr<Node>& startNode, const ShrdPtr<Node>& targetNode) {
-    using NodeDist = std::pair<int, ShrdPtr<Node>>;
+template<>
+DynamicArraySmart<ShrdPtr<Edge<std::string>>> Dijkstra::findShortestPath(const ShrdPtr<Node<std::string>>& startNode, const ShrdPtr<Node<std::string>>& targetNode) {
+    using NodeDist = std::pair<int, ShrdPtr<Node<std::string>>>;
     auto cmp = [](const NodeDist& left, const NodeDist& right) { return left.first > right.first; };
     std::priority_queue<NodeDist, std::vector<NodeDist>, decltype(cmp)> pq(cmp);
 
-    HashTable<ShrdPtr<Node>, int> distances;
-    HashTable<ShrdPtr<Node>, ShrdPtr<Edge>> previousEdge;
+    HashTable<ShrdPtr<Node<std::string>>, int> distances;
+    HashTable<ShrdPtr<Node<std::string>>, ShrdPtr<Edge<std::string>>> previousEdge;
 
     distances.Add(startNode, 0);
     pq.push({0, startNode});
@@ -95446,7 +95477,7 @@ DynamicArraySmart<ShrdPtr<Edge>> Dijkstra::findShortestPath(const ShrdPtr<Node>&
         }
 
         for (const auto& edge : currentNode->getEdges()) {
-            ShrdPtr<Node> neighbor = (edge->getFromNode() == currentNode) ? edge->getToNode() : edge->getFromNode();
+            ShrdPtr<Node<std::string>> neighbor = (edge->getFromNode() == currentNode) ? edge->getToNode() : edge->getFromNode();
             int newDistance = currentDistance + edge->getWeight();
 
             if (!distances.ContainsKey(neighbor) || newDistance < distances.Get(neighbor)) {
@@ -95467,15 +95498,15 @@ DynamicArraySmart<ShrdPtr<Edge>> Dijkstra::findShortestPath(const ShrdPtr<Node>&
         }
     }
 
-    DynamicArraySmart<ShrdPtr<Edge>> shortestPath;
-    ShrdPtr<Node> currentNode = targetNode;
+    DynamicArraySmart<ShrdPtr<Edge<std::string>>> shortestPath;
+    ShrdPtr<Node<std::string>> currentNode = targetNode;
 
     while (currentNode != startNode) {
         if (!previousEdge.ContainsKey(currentNode)) {
-            return DynamicArraySmart<ShrdPtr<Edge>>();
+            return DynamicArraySmart<ShrdPtr<Edge<std::string>>>();
         }
 
-        ShrdPtr<Edge> edge = previousEdge.Get(currentNode);
+        ShrdPtr<Edge<std::string>> edge = previousEdge.Get(currentNode);
         shortestPath.Prepend(edge);
         currentNode = (edge->getFromNode() == currentNode) ? edge->getToNode() : edge->getFromNode();
     }
@@ -95483,14 +95514,15 @@ DynamicArraySmart<ShrdPtr<Edge>> Dijkstra::findShortestPath(const ShrdPtr<Node>&
     return shortestPath;
 }
 
-DynamicArraySmart<ShrdPtr<Edge>> BellmanFord::findShortestPath(
-    const ShrdPtr<Node>& startNode,
-    const ShrdPtr<Node>& targetNode,
-    const DynamicArraySmart<ShrdPtr<Edge>>& edges,
-    const DynamicArraySmart<ShrdPtr<Node>>& nodes)
+template<>
+DynamicArraySmart<ShrdPtr<Edge<std::string>>> BellmanFord::findShortestPath(
+    const ShrdPtr<Node<std::string>>& startNode,
+    const ShrdPtr<Node<std::string>>& targetNode,
+    const DynamicArraySmart<ShrdPtr<Edge<std::string>>>& edges,
+    const DynamicArraySmart<ShrdPtr<Node<std::string>>>& nodes)
 {
-    HashTable<ShrdPtr<Node>, int> distances;
-    HashTable<ShrdPtr<Node>, ShrdPtr<Edge>> previousEdge;
+    HashTable<ShrdPtr<Node<std::string>>, int> distances;
+    HashTable<ShrdPtr<Node<std::string>>, ShrdPtr<Edge<std::string>>> previousEdge;
 
     for(int i = 0; i < nodes.GetLength(); ++i) {
         distances.Add(nodes[i], std::numeric_limits<int>::max());
@@ -95500,8 +95532,8 @@ DynamicArraySmart<ShrdPtr<Edge>> BellmanFord::findShortestPath(
     for (size_t i = 0; i < nodes.GetLength() - 1; ++i) {
         for (int j = 0; j < edges.GetLength(); ++j) {
             const auto& edge = edges[j];
-            ShrdPtr<Node> fromNode = edge->getFromNode();
-            ShrdPtr<Node> toNode = edge->getToNode();
+            ShrdPtr<Node<std::string>> fromNode = edge->getFromNode();
+            ShrdPtr<Node<std::string>> toNode = edge->getToNode();
             int weight = edge->getWeight();
 
             if (distances.Get(fromNode) != std::numeric_limits<int>::max() &&
@@ -95519,25 +95551,26 @@ DynamicArraySmart<ShrdPtr<Edge>> BellmanFord::findShortestPath(
 
     for (int j = 0; j < edges.GetLength(); ++j) {
         const auto& edge = edges[j];
-        ShrdPtr<Node> fromNode = edge->getFromNode();
-        ShrdPtr<Node> toNode = edge->getToNode();
+        ShrdPtr<Node<std::string>> fromNode = edge->getFromNode();
+        ShrdPtr<Node<std::string>> toNode = edge->getToNode();
         int weight = edge->getWeight();
+
 
         if (distances.Get(fromNode) != std::numeric_limits<int>::max() &&
             distances.Get(fromNode) + weight < distances.Get(toNode)) {
             throw std::runtime_error("Graph contains a negative-weight cycle");
-        }
+            }
     }
 
-    DynamicArraySmart<ShrdPtr<Edge>> shortestPath;
-    ShrdPtr<Node> currentNode = targetNode;
+    DynamicArraySmart<ShrdPtr<Edge<std::string>>> shortestPath;
+    ShrdPtr<Node<std::string>> currentNode = targetNode;
 
     while (currentNode != startNode) {
         if (!previousEdge.ContainsKey(currentNode)) {
-            return DynamicArraySmart<ShrdPtr<Edge>>();
+            return DynamicArraySmart<ShrdPtr<Edge<std::string>>>();
         }
 
-        ShrdPtr<Edge> edge = previousEdge.Get(currentNode);
+        ShrdPtr<Edge<std::string>> edge = previousEdge.Get(currentNode);
         shortestPath.Prepend(edge);
         currentNode = (edge->getFromNode() == currentNode) ? edge->getToNode() : edge->getFromNode();
     }

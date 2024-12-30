@@ -7197,6 +7197,7 @@ void testBellmanFord();
 # 2 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 2
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 1
        
+
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/LinkedListSmart.h" 1
 
 
@@ -75784,6 +75785,24 @@ public:
         }
     }
 
+    void Remove(T& elem) {
+        auto current = head;
+        int index = 0;
+        while (current->next) {
+            if (current->data == elem) {
+                RemoveAt(index);
+                return;
+            }
+            ++index;
+            current = current->next;
+        }
+        if (current->data == elem) {
+            RemoveAt(index);
+            return;
+        }
+        throw std::out_of_range("Index out of range");
+    }
+
     void RemoveAt(int index) override {
         if (index < 0 || index >= static_cast<int>(length))
             throw std::out_of_range("Index out of range");
@@ -75850,7 +75869,7 @@ public:
         return Iterator(nullptr);
     }
 };
-# 3 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 4 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/ShrdPtr.h" 1
 
 
@@ -76081,7 +76100,7 @@ public:
         return ref_count;
     }
 };
-# 4 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 5 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 # 1 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 1
 
 
@@ -76441,6 +76460,7 @@ public:
     }
 };
 # 6 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+
 
 
 
@@ -78148,7 +78168,7 @@ struct IndexPairHash {
         return row_hash ^ (col_hash * 2654435761);
     }
 };
-# 10 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+# 11 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
 # 1 "C:/mingw64/include/c++/14.2.0/functional" 1 3
 # 46 "C:/mingw64/include/c++/14.2.0/functional" 3
        
@@ -91541,14 +91561,14 @@ namespace std
 
 
 }
-# 11 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
+# 12 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h" 2
 
 
 
 
 
-# 15 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
-class Edge;
+# 16 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
+template<typename T>
 class Node;
 
 template<typename T>
@@ -91648,17 +91668,19 @@ template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::GetCapacity() const {
     return capacity;
 }
-
 template<typename TKey, typename TElement>
 size_t HashTable<TKey, TElement>::HashFunction(const TKey &key) const {
-    if constexpr (std::is_same<TKey, ShrdPtr<Node>>::value) {
-        return ShrdPtrHash<Node>()(key);
-    } else if constexpr (std::is_same<TKey, IndexPair>::value) {
+    if constexpr (std::is_same<TKey, ShrdPtr<Node<std::string>>>::value) {
+        return std::hash<std::string>()(key->getName());
+    }
+    else if constexpr (std::is_same<TKey, IndexPair>::value) {
         return IndexPairHash()(key);
-    } else {
+    }
+    else {
         return std::hash<TKey>()(key);
     }
 }
+
 
 template<typename TKey, typename TElement>
 void HashTable<TKey, TElement>::Add(const TKey &key, const TElement &element) {
@@ -91816,7 +91838,7 @@ template<typename TKey, typename TElement>
 UnqPtr<IDictionaryIterator<TKey, TElement>> HashTable<TKey, TElement>::GetIterator() const {
     return UnqPtr<IDictionaryIterator<TKey, TElement>>(new HashTableIterator(this));
 }
-# 5 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 6 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 
 
 # 1 "C:/mingw64/include/c++/14.2.0/queue" 1 3
@@ -95274,80 +95296,172 @@ namespace std
        
 # 48 "C:/mingw64/include/c++/14.2.0/bits/version.h" 3
 # 70 "C:/mingw64/include/c++/14.2.0/queue" 2 3
-# 8 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
+# 9 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h" 2
 
 
 
 
 
-# 12 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h"
+
+# 14 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.h"
+template <typename T>
+class Edge;
+
+template <typename T>
+class Node;
+
+template <typename T>
+class Graph;
+
+template <typename T>
 class Node {
 private:
-    LinkedListSmart<ShrdPtr<Edge>> edges_;
-    std::string name_;
+    LinkedListSmart<ShrdPtr<Edge<T>>> edges_;
+    T name_;
     static int nodeId_;
 
 public:
-    Node();
-    Node(std::string name);
+    Node() {
+        name_ = std::to_string(++nodeId_);
+    }
+    explicit Node(T name) : name_(std::move(name)) {}
 
-    const std::string getName() const;
+    const T& getName() const { return name_; }
 
     Node(const Node&) = delete;
     Node& operator=(const Node&) = delete;
 
-    Node(Node&& other) noexcept;
-    Node& operator=(Node&& other) noexcept;
+    Node(Node&& other) noexcept = default;
+    Node& operator=(Node&& other) noexcept = default;
 
-    void addEdge(const ShrdPtr<Edge>& edge);
-    const LinkedListSmart<ShrdPtr<Edge>>& getEdges() const;
+    void addEdge(const ShrdPtr<Edge<T>>& edge) { edges_.Append(edge); }
+    LinkedListSmart<ShrdPtr<Edge<T>>>& getEdges() { return edges_; }
 };
 
+template <typename T>
+int Node<T>::nodeId_ = 0;
+
+template <typename T>
 class Edge {
 private:
     int weight_;
-    ShrdPtr<Node> fromNode_;
-    ShrdPtr<Node> toNode_;
+    ShrdPtr<Node<T>> fromNode_;
+    ShrdPtr<Node<T>> toNode_;
 
 public:
-    Edge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode);
+    Edge(int weight, const ShrdPtr<Node<T>>& fromNode, const ShrdPtr<Node<T>>& toNode)
+        : weight_(weight), fromNode_(fromNode), toNode_(toNode) {}
 
-    int getWeight() const;
-    ShrdPtr<Node> getFromNode() const;
-    ShrdPtr<Node> getToNode() const;
+    int getWeight() const { return weight_; }
+    ShrdPtr<Node<T>> getFromNode() const { return fromNode_; }
+    ShrdPtr<Node<T>> getToNode() const { return toNode_; }
 };
 
+template <typename T>
 class Graph {
 private:
-    DynamicArraySmart<ShrdPtr<Node>> nodes_;
-    DynamicArraySmart<ShrdPtr<Edge>> edges_;
+    DynamicArraySmart<ShrdPtr<Node<T>>> nodes_;
+    DynamicArraySmart<ShrdPtr<Edge<T>>> edges_;
 
 public:
-    Graph() = default;
 
-    ShrdPtr<Node> createNode();
-    ShrdPtr<Node> getNodeByName(const std::string& name);
-    ShrdPtr<Node> createNode(const std::string& nodeName);
-    ShrdPtr<Edge> createEdge(int weight, const ShrdPtr<Node>& fromNode, const ShrdPtr<Node>& toNode);
+    ShrdPtr<Node<T>> createNode(const T& nodeName) {
+        auto node = ShrdPtr<Node<T>>(new Node<T>(nodeName));
+        nodes_.Append(node);
+        return node;
+    }
 
-    const DynamicArraySmart<ShrdPtr<Node>>& getNodes() const;
-    const DynamicArraySmart<ShrdPtr<Edge>>& getEdges() const;
+    ShrdPtr<Node<T>> getNodeByName(const T& name) {
+        for (const auto& node : nodes_) {
+            if (node->getName() == name) {
+                return node;
+            }
+        }
+        throw std::runtime_error("Node not found");
+    }
+
+    ShrdPtr<Edge<T>> createEdge(int weight, const ShrdPtr<Node<T>>& fromNode, const ShrdPtr<Node<T>>& toNode) {
+        auto edge = ShrdPtr<Edge<T>>(new Edge<T>(weight, fromNode, toNode));
+        edges_.Append(edge);
+        fromNode->addEdge(edge);
+        return edge;
+    }
+
+    void removeNode(const T& nodeName);
+    void removeEdge(const T& fromNodeName, const T& toNodeName);
+
+    const DynamicArraySmart<ShrdPtr<Node<T>>>& getNodes() const { return nodes_; }
+    const DynamicArraySmart<ShrdPtr<Edge<T>>>& getEdges() const { return edges_; }
 };
 
 class Dijkstra {
 public:
-    static DynamicArraySmart<ShrdPtr<Edge>> findShortestPath(const ShrdPtr<Node>& startNode, const ShrdPtr<Node>& targetNode);
+    template <typename T>
+    static DynamicArraySmart<ShrdPtr<Edge<T>>> findShortestPath(const ShrdPtr<Node<T>>& startNode, const ShrdPtr<Node<T>>& targetNode);
 };
 
 class BellmanFord {
 public:
-    static DynamicArraySmart<ShrdPtr<Edge>> findShortestPath(
-        const ShrdPtr<Node>& startNode,
-        const ShrdPtr<Node>& targetNode,
-        const DynamicArraySmart<ShrdPtr<Edge>>& edges,
-        const DynamicArraySmart<ShrdPtr<Node>>& nodes
+    template <typename T>
+    static DynamicArraySmart<ShrdPtr<Edge<T>>> findShortestPath(
+        const ShrdPtr<Node<T>>& startNode,
+        const ShrdPtr<Node<T>>& targetNode,
+        const DynamicArraySmart<ShrdPtr<Edge<T>>>& edges,
+        const DynamicArraySmart<ShrdPtr<Node<T>>>& nodes
     );
 };
+
+template <typename T>
+void Graph<T>::removeNode(const T& nodeName) {
+    ShrdPtr<Node<T>> nodeToRemove;
+    for (int i = 0; i < nodes_.GetLength(); ++i) {
+        if (nodes_[i]->getName() == nodeName) {
+            nodeToRemove = nodes_[i];
+            nodes_.RemoveAt(i);
+            break;
+        }
+    }
+
+    if (!nodeToRemove) {
+        throw std::invalid_argument("Node does not exist");
+    }
+
+    for (int i = edges_.GetLength() - 1; i >= 0; --i) {
+        if (edges_[i]->getFromNode() == nodeToRemove || edges_[i]->getToNode() == nodeToRemove) {
+            edges_.RemoveAt(i);
+        }
+    }
+}
+
+template <typename T>
+void Graph<T>::removeEdge(const T& fromNode, const T& toNode) {
+    ShrdPtr<Edge<T>> edgeToRemove;
+    for (int i = 0; i < edges_.GetLength(); ++i) {
+        if (edges_[i]->getFromNode()->getName() == fromNode && edges_[i]->getToNode()->getName() == toNode) {
+            edgeToRemove = edges_[i];
+            edges_.RemoveAt(i);
+            break;
+        }
+    }
+
+    if (!edgeToRemove) {
+        throw std::invalid_argument("Edge does not exist");
+    }
+
+    for (auto& edge : edgeToRemove->getFromNode()->getEdges()) {
+        if (edge == edgeToRemove) {
+            edgeToRemove->getFromNode()->getEdges().Remove(edge);
+            break;
+        }
+    }
+
+    for (auto& edge : edgeToRemove->getToNode()->getEdges()) {
+        if (edge == edgeToRemove) {
+            edgeToRemove->getToNode()->getEdges().Remove(edge);
+            break;
+        }
+    }
+}
 # 3 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 2
 # 1 "C:/mingw64/include/c++/14.2.0/cassert" 1 3
 # 41 "C:/mingw64/include/c++/14.2.0/cassert" 3
@@ -106313,8 +106427,8 @@ namespace __detail
 # 6 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
 std::pair<long long, long long> testPerformance(const int& numNodes, const int& numEdges) {
 
-    Graph graph;
-    std::vector<ShrdPtr<Node>> nodes;
+    Graph<std::string> graph;
+    std::vector<ShrdPtr<Node<std::string>>> nodes;
     for (int i = 0; i < numNodes; ++i) {
         nodes.push_back(graph.createNode("Node_" + std::to_string(i)));
     }
@@ -106363,7 +106477,7 @@ std::pair<long long, long long> testPerformance(const int& numNodes, const int& 
 }
 
 void testDijkstra() {
-    Graph graph;
+    Graph<std::string> graph;
     auto nodeA = graph.createNode("A");
     auto nodeB = graph.createNode("B");
     auto nodeC = graph.createNode("C");
@@ -106469,12 +106583,54 @@ void testDijkstra() {
    ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",79),0))
 # 79 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                                          ;
+    graph.createEdge(0, nodeA, nodeD);
 
+    auto shortestPath1 = Dijkstra::findShortestPath(nodeA, nodeD);
+
+    
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath1.GetLength() == 1
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath1.GetLength() == 1"
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",84),0))
+# 84 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                         ;
+    
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath1[0]->getFromNode()->getName() == "A"
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath1[0]->getFromNode()->getName() == \"A\""
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",85),0))
+# 85 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                            ;
+    
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath1[0]->getToNode()->getName() == "D"
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath1[0]->getToNode()->getName() == \"D\""
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",86),0))
+# 86 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                          ;
     std::cout << "Dijkstra test passed!" << std::endl;
 }
 
 void testBellmanFord() {
-    Graph graph;
+    Graph<std::string> graph;
     auto nodeA = graph.createNode("A");
     auto nodeB = graph.createNode("B");
     auto nodeC = graph.createNode("C");
@@ -106490,100 +106646,100 @@ void testBellmanFord() {
 
 
     
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    (void) ((!!(
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    shortestPath.GetLength() == 3
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    )) || (_assert(
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    "shortestPath.GetLength() == 3"
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",100),0))
-# 100 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                        ;
-    
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[0]->getFromNode()->getName() == "A"
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[0]->getFromNode()->getName() == \"A\""
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",101),0))
-# 101 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                                           ;
-    
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[0]->getToNode()->getName() == "B"
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[0]->getToNode()->getName() == \"B\""
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",102),0))
-# 102 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                                         ;
-    
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[1]->getFromNode()->getName() == "B"
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[1]->getFromNode()->getName() == \"B\""
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",103),0))
-# 103 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                                           ;
-    
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[1]->getToNode()->getName() == "C"
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[1]->getToNode()->getName() == \"C\""
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",104),0))
-# 104 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                                         ;
-    
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[2]->getFromNode()->getName() == "C"
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[2]->getFromNode()->getName() == \"C\""
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",105),0))
-# 105 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-                                                           ;
-    
-# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   (void) ((!!(
-# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   shortestPath[2]->getToNode()->getName() == "D"
-# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   )) || (_assert(
-# 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
-   "shortestPath[2]->getToNode()->getName() == \"D\""
 # 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",106),0))
 # 106 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                        ;
+    
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[0]->getFromNode()->getName() == "A"
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[0]->getFromNode()->getName() == \"A\""
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",107),0))
+# 107 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                           ;
+    
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[0]->getToNode()->getName() == "B"
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[0]->getToNode()->getName() == \"B\""
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",108),0))
+# 108 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                         ;
+    
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[1]->getFromNode()->getName() == "B"
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[1]->getFromNode()->getName() == \"B\""
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",109),0))
+# 109 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                           ;
+    
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[1]->getToNode()->getName() == "C"
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[1]->getToNode()->getName() == \"C\""
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",110),0))
+# 110 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                         ;
+    
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[2]->getFromNode()->getName() == "C"
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[2]->getFromNode()->getName() == \"C\""
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",111),0))
+# 111 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+                                                           ;
+    
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   (void) ((!!(
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   shortestPath[2]->getToNode()->getName() == "D"
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   )) || (_assert(
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+   "shortestPath[2]->getToNode()->getName() == \"D\""
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",112),0))
+# 112 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                                          ;
 
     std::cout << "Bellman-Ford test passed!" << std::endl;
 
-    Graph negativeGraph;
+    Graph<std::string> negativeGraph;
     auto node1 = negativeGraph.createNode("1");
     auto node2 = negativeGraph.createNode("2");
     auto node3 = negativeGraph.createNode("3");
@@ -106595,48 +106751,48 @@ void testBellmanFord() {
 
     auto negativePath = BellmanFord::findShortestPath(node1, node3, negativeGraph.getEdges(), negativeGraph.getNodes());
     
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    (void) ((!!(
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    negativePath.GetLength() == 1
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    )) || (_assert(
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    "negativePath.GetLength() == 1"
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",121),0))
-# 121 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",127),0))
+# 127 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                         ;
     
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    (void) ((!!(
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    negativePath[0]->getFromNode()->getName() == "1"
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    )) || (_assert(
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    "negativePath[0]->getFromNode()->getName() == \"1\""
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",122),0))
-# 122 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",128),0))
+# 128 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                                            ;
     
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    (void) ((!!(
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    negativePath[0]->getToNode()->getName() == "3"
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
    )) || (_assert(
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
    "negativePath[0]->getToNode()->getName() == \"3\""
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",123),0))
-# 123 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+   ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",129),0))
+# 129 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                                          ;
 
     std::cout << "Bellman-Ford negative edge test passed!" << std::endl;
 
-    Graph negativeCycleGraph;
+    Graph<std::string> negativeCycleGraph;
     auto n1 = negativeCycleGraph.createNode("1");
     auto n2 = negativeCycleGraph.createNode("2");
     auto n3 = negativeCycleGraph.createNode("3");
@@ -106650,17 +106806,17 @@ void testBellmanFord() {
         std::cout << "Test failed. Expected exception due to negative cycle." << std::endl;
     } catch (const std::runtime_error& e) {
         
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
        (void) ((!!(
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
        std::string(e.what()) == "Graph contains a negative-weight cycle"
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
        )) || (_assert(
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
        "std::string(e.what()) == \"Graph contains a negative-weight cycle\""
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
-       ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",140),0))
-# 140 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 3
+       ,"C:/Users/makar/CLionProjects/laba4/tests.cpp",146),0))
+# 146 "C:/Users/makar/CLionProjects/laba4/tests.cpp"
                                                                                 ;
         std::cout << "Bellman-Ford negative cycle test passed!" << std::endl;
     }

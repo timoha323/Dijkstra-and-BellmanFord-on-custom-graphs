@@ -109,6 +109,24 @@ public:
         }
     }
 
+    void Remove(T& elem) {
+        auto current = head;
+        int index = 0;
+        while (current->next) {
+            if (current->data == elem) {
+                RemoveAt(index);
+                return;
+            }
+            ++index;
+            current = current->next;
+        }
+        if (current->data == elem) {
+            RemoveAt(index);
+            return;
+        }
+        throw std::out_of_range(LINKEDLIST_OUT_OF_RANGE);
+    }
+
     void RemoveAt(int index) override {
         if (index < 0 || index >= static_cast<int>(length))
             throw std::out_of_range(LINKEDLIST_OUT_OF_RANGE);

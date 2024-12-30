@@ -5,8 +5,8 @@
 
 std::pair<long long, long long> testPerformance(const int& numNodes, const int& numEdges) {
 
-    Graph graph;
-    std::vector<ShrdPtr<Node>> nodes;
+    Graph<std::string> graph;
+    std::vector<ShrdPtr<Node<std::string>>> nodes;
     for (int i = 0; i < numNodes; ++i) {
         nodes.push_back(graph.createNode("Node_" + std::to_string(i)));
     }
@@ -55,7 +55,7 @@ std::pair<long long, long long> testPerformance(const int& numNodes, const int& 
 }
 
 void testDijkstra() {
-    Graph graph;
+    Graph<std::string> graph;
     auto nodeA = graph.createNode("A");
     auto nodeB = graph.createNode("B");
     auto nodeC = graph.createNode("C");
@@ -77,12 +77,18 @@ void testDijkstra() {
     assert(shortestPath[1]->getToNode()->getName() == "C");
     assert(shortestPath[2]->getFromNode()->getName() == "C");
     assert(shortestPath[2]->getToNode()->getName() == "D");
+    graph.createEdge(0, nodeA, nodeD);
 
+    auto shortestPath1 = Dijkstra::findShortestPath(nodeA, nodeD);
+    // Ожидаемый путь: A -> D
+    assert(shortestPath1.GetLength() == 1);
+    assert(shortestPath1[0]->getFromNode()->getName() == "A");
+    assert(shortestPath1[0]->getToNode()->getName() == "D");
     std::cout << "Dijkstra test passed!" << std::endl;
 }
 
 void testBellmanFord() {
-    Graph graph;
+    Graph<std::string> graph;
     auto nodeA = graph.createNode("A");
     auto nodeB = graph.createNode("B");
     auto nodeC = graph.createNode("C");
@@ -107,7 +113,7 @@ void testBellmanFord() {
 
     std::cout << "Bellman-Ford test passed!" << std::endl;
 
-    Graph negativeGraph;
+    Graph<std::string> negativeGraph;
     auto node1 = negativeGraph.createNode("1");
     auto node2 = negativeGraph.createNode("2");
     auto node3 = negativeGraph.createNode("3");
@@ -124,7 +130,7 @@ void testBellmanFord() {
 
     std::cout << "Bellman-Ford negative edge test passed!" << std::endl;
 
-    Graph negativeCycleGraph;
+    Graph<std::string> negativeCycleGraph;
     auto n1 = negativeCycleGraph.createNode("1");
     auto n2 = negativeCycleGraph.createNode("2");
     auto n3 = negativeCycleGraph.createNode("3");

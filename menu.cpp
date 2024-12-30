@@ -1,10 +1,11 @@
 #include "menu.h"
+#include "DataStructures/Graph.h"
 #include <iostream>
 #include <chrono>
 #include <fstream>
 #include <cstdlib>
 
-void displayGraph(const Graph& graph) {
+void displayGraph(const Graph<std::string>& graph) {
     std::ofstream outFile("graph_output.py");
     outFile << "import networkx as nx\n";
     outFile << "import matplotlib.pyplot as plt\n";
@@ -29,7 +30,7 @@ void displayGraph(const Graph& graph) {
 }
 
 void menu() {
-    Graph graph;
+    Graph<std::string> graph;
 
     auto nodeA = graph.createNode("A");
     auto nodeB = graph.createNode("B");
@@ -51,7 +52,9 @@ void menu() {
         std::cout << "3. Find Shortest Path (Bellman-Ford)\n";
         std::cout << "4. Add Node\n";
         std::cout << "5. Add Edge\n";
-        std::cout << "6. Exit\n";
+        std::cout << "6. Remove Node\n";
+        std::cout << "7. Remove Edge\n";
+        std::cout << "8. Exit\n";
         std::cout << "Choose an option: ";
 
         int choice;
@@ -76,8 +79,8 @@ void menu() {
             std::cin >> startNode;
             std::cout << "Enter target node: ";
             std::cin >> targetNode;
-            ShrdPtr<Node> start;
-            ShrdPtr<Node> target;
+            ShrdPtr<Node<std::string>> start;
+            ShrdPtr<Node<std::string>> target;
             try {
                 start = graph.getNodeByName(startNode);
                 target = graph.getNodeByName(targetNode);
@@ -110,8 +113,8 @@ void menu() {
             std::cout << "Enter target node: ";
             std::cin >> targetNode;
 
-            ShrdPtr<Node> start;
-            ShrdPtr<Node> target;
+            ShrdPtr<Node<std::string>> start;
+            ShrdPtr<Node<std::string>> target;
             try {
                 start = graph.getNodeByName(startNode);
                 target = graph.getNodeByName(targetNode);
@@ -154,8 +157,8 @@ void menu() {
                 std::cout << "Enter edge weight: ";
                 std::cin >> weight;
 
-                ShrdPtr<Node> fromNode = graph.getNodeByName(fromNodeName);
-                ShrdPtr<Node> toNode = graph.getNodeByName(toNodeName);
+                ShrdPtr<Node<std::string>> fromNode = graph.getNodeByName(fromNodeName);
+                ShrdPtr<Node<std::string>> toNode = graph.getNodeByName(toNodeName);
 
                 if (fromNode && toNode) {
                     graph.createEdge(weight, fromNode, toNode);
@@ -168,6 +171,19 @@ void menu() {
             }
 
         } else if (choice == 6) {
+            std::string nodeName;
+            std::cout << "Enter node name to remove: ";
+            std::cin >> nodeName;
+            graph.removeNode(nodeName);
+        } else if (choice == 7) {
+            std::string fromNode, toNode;
+            std::cout << "Enter start node to remove: ";
+            std::cin >> fromNode;
+            std::cout << "Enter end node to remove: ";
+            std::cin >> toNode;
+            graph.removeEdge(fromNode, toNode);
+        }
+        else if (choice == 8) {
             break;
 
         } else {

@@ -3,7 +3,6 @@
 #include <vector>
 #include <fstream>
 
-
 int main() {
     testDijkstra();
     testBellmanFord();
@@ -20,9 +19,6 @@ int main() {
         return 1;
     }
     for (const auto& test : tests) {
-        std::cout << test.first.first << " "
-                    << test.first.second << " "
-                    << test.second << "\n";
         outFile << test.first.first << " "
                 << test.first.second << " "
                 << test.second << "\n";
