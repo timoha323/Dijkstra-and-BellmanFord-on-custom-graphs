@@ -91566,8 +91566,7 @@ namespace std
 
 
 
-
-# 16 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
+# 15 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
 template<typename T>
 class Node;
 
@@ -95321,9 +95320,7 @@ private:
     static int nodeId_;
 
 public:
-    Node() {
-        name_ = std::to_string(++nodeId_);
-    }
+    Node() { name_ = std::to_string(++nodeId_); }
     explicit Node(T name) : name_(std::move(name)) {}
 
     const T& getName() const { return name_; }
@@ -95410,58 +95407,6 @@ public:
         const DynamicArraySmart<ShrdPtr<Node<T>>>& nodes
     );
 };
-
-template <typename T>
-void Graph<T>::removeNode(const T& nodeName) {
-    ShrdPtr<Node<T>> nodeToRemove;
-    for (int i = 0; i < nodes_.GetLength(); ++i) {
-        if (nodes_[i]->getName() == nodeName) {
-            nodeToRemove = nodes_[i];
-            nodes_.RemoveAt(i);
-            break;
-        }
-    }
-
-    if (!nodeToRemove) {
-        throw std::invalid_argument("Node does not exist");
-    }
-
-    for (int i = edges_.GetLength() - 1; i >= 0; --i) {
-        if (edges_[i]->getFromNode() == nodeToRemove || edges_[i]->getToNode() == nodeToRemove) {
-            edges_.RemoveAt(i);
-        }
-    }
-}
-
-template <typename T>
-void Graph<T>::removeEdge(const T& fromNode, const T& toNode) {
-    ShrdPtr<Edge<T>> edgeToRemove;
-    for (int i = 0; i < edges_.GetLength(); ++i) {
-        if (edges_[i]->getFromNode()->getName() == fromNode && edges_[i]->getToNode()->getName() == toNode) {
-            edgeToRemove = edges_[i];
-            edges_.RemoveAt(i);
-            break;
-        }
-    }
-
-    if (!edgeToRemove) {
-        throw std::invalid_argument("Edge does not exist");
-    }
-
-    for (auto& edge : edgeToRemove->getFromNode()->getEdges()) {
-        if (edge == edgeToRemove) {
-            edgeToRemove->getFromNode()->getEdges().Remove(edge);
-            break;
-        }
-    }
-
-    for (auto& edge : edgeToRemove->getToNode()->getEdges()) {
-        if (edge == edgeToRemove) {
-            edgeToRemove->getToNode()->getEdges().Remove(edge);
-            break;
-        }
-    }
-}
 # 3 "C:/Users/makar/CLionProjects/laba4/tests.cpp" 2
 # 1 "C:/mingw64/include/c++/14.2.0/cassert" 1 3
 # 41 "C:/mingw64/include/c++/14.2.0/cassert" 3

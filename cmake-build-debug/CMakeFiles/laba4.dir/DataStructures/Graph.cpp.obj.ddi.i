@@ -91558,8 +91558,7 @@ namespace std
 
 
 
-
-# 16 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
+# 15 "C:/Users/makar/CLionProjects/laba4/DataStructures/HashTable.h"
 template<typename T>
 class Node;
 
@@ -95313,9 +95312,7 @@ private:
     static int nodeId_;
 
 public:
-    Node() {
-        name_ = std::to_string(++nodeId_);
-    }
+    Node() { name_ = std::to_string(++nodeId_); }
     explicit Node(T name) : name_(std::move(name)) {}
 
     const T& getName() const { return name_; }
@@ -95402,6 +95399,7 @@ public:
         const DynamicArraySmart<ShrdPtr<Node<T>>>& nodes
     );
 };
+# 2 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.cpp" 2
 
 template <typename T>
 void Graph<T>::removeNode(const T& nodeName) {
@@ -95454,7 +95452,7 @@ void Graph<T>::removeEdge(const T& fromNode, const T& toNode) {
         }
     }
 }
-# 2 "C:/Users/makar/CLionProjects/laba4/DataStructures/Graph.cpp" 2
+
 
 template<>
 DynamicArraySmart<ShrdPtr<Edge<std::string>>> Dijkstra::findShortestPath(const ShrdPtr<Node<std::string>>& startNode, const ShrdPtr<Node<std::string>>& targetNode) {

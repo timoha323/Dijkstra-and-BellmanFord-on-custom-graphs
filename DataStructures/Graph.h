@@ -28,9 +28,7 @@ private:
     static int nodeId_;
 
 public:
-    Node() {
-        name_ = std::to_string(++nodeId_);
-    }
+    Node() { name_ = std::to_string(++nodeId_); }
     explicit Node(T name) : name_(std::move(name)) {}
 
     const T& getName() const { return name_; }

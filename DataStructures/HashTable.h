@@ -12,7 +12,6 @@
 #include <stdexcept>
 #include <type_traits>
 
-// Предварительное объявление Node
 template<typename T>
 class Node;
 

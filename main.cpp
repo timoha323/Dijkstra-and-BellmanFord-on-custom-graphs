@@ -26,5 +26,6 @@ int main() {
     outFile.close();
     system("python3 ../print_graphics.py");
     menu();
+    
     return 0;
 }
